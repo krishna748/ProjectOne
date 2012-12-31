@@ -1,0 +1,87 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "This template creates an RDS instance.",
+  "Parameters" : {
+    "DBName": {
+		  "Default": "MyDatabase",
+		  "Description" : "MySQL database name",
+		  "Type": "String",
+		  "MinLength": "1",
+		  "MaxLength": "64",
+		  "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+		  "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+	   },
+	   "DBUsername": {
+		  "NoEcho": "true",
+		  "Description" : "Username for MySQL database access",
+		  "Type": "String",
+		  "MinLength": "1",
+		  "MaxLength": "16",
+		  "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+		  "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+		},
+
+		"DBPassword": {
+		  "NoEcho": "true",
+		  "Description" : "Password for MySQL database access",
+		  "Type": "String",
+		  "MinLength": "1",
+		  "MaxLength": "41",
+		  "AllowedPattern" : "[a-zA-Z0-9]*",
+		  "ConstraintDescription" : "must contain only alphanumeric characters."
+		},
+
+		"DBAllocatedStorage": {
+		  "Default": "5",
+		  "Description" : "The size of the database (Gb)",
+		  "Type": "Number",
+		  "MinValue": "5",
+		  "MaxValue": "1024",
+		  "ConstraintDescription" : "must be between 5 and 1024Gb."
+		},
+
+		"DBInstanceClass": {
+		  "Default": "db.m1.small",
+		  "Description" : "The database instance type",
+		  "Type": "String",
+		  "AllowedValues" : [ "db.m1.small", "db.m1.large", "db.m1.xlarge", "db.m2.xlarge", "db.m2.2xlarge", "db.m2.4xlarge" ],
+		  "ConstraintDescription" : "must select a valid database instance type."
+		}
+	},
+	"Resources" : {
+		"SecurityGroup" : {
+		  "Type" : "AWS::EC2::SecurityGroup",
+		  "Properties" : {
+			"GroupDescription" : "Enable HTTP access via port 80",
+			"SecurityGroupIngress" : [
+			  {"IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0"},
+			  {"IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : "0.0.0.0/0"}
+			]
+		  }      
+		},
+
+		"DBSecurityGroup": {
+		  "Type": "AWS::RDS::DBSecurityGroup",
+		  "Properties": {
+			"GroupDescription": "Grant database access to web server",
+			"DBSecurityGroupIngress": {
+			  "EC2SecurityGroupName": { "Ref": "SecurityGroup" }
+			}
+		  }
+		},
+
+		"MySQLDatabase": {
+		  "Type": "AWS::RDS::DBInstance",
+		  "Properties": {
+			"Engine" : "MySQL",
+			"DBName" : { "Ref": "DBName" },
+			"MultiAZ" : "false",
+			"MasterUsername": { "Ref": "DBUsername" },
+			"MasterUserPassword": { "Ref" : "DBPassword" },
+			"DBInstanceClass": { "Ref" : "DBInstanceClass" },
+			"DBSecurityGroups": [ { "Ref": "DBSecurityGroup" } ],
+			"AllocatedStorage": { "Ref" : "DBAllocatedStorage" }
+		  }
+		}
+	}
+}  
