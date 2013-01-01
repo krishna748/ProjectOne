@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
-  "Description" : "This template creates an RDS instance.",
+  "Description" : "This template creates an RDS instance. This is a test script by rajesh to check if it works in git pull by puppet master",
   "Parameters" : {
     "DBName": {
 		  "Default": "MyDatabase",
